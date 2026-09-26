@@ -415,6 +415,7 @@ function buildLevel() {
 }
 
 // ---------- Estado ----------
+const MAX_LIVES = 10;
 let lives = 3, score = 0, level = 1;
 let running = true, paused = false;
 
@@ -656,9 +657,14 @@ function breakBrick(br, b) {
     ballFx.bigUntil = gameTime + 7000;
     toast('🍌 ¡MANGO GIGANTE! 🍌', 1000);
   } else if (br.type === 'heart') {
-    lives++;
-    livesEl.textContent = lives;
-    toast('❤️ ¡VIDA EXTRA! ❤️', 1000);
+    if (lives < MAX_LIVES) {
+      lives++;
+      livesEl.textContent = lives;
+      toast('❤️ ¡VIDA EXTRA! ❤️' + (lives === MAX_LIVES ? '<br>(máximo ' + MAX_LIVES + ')' : ''), 1000);
+    } else {
+      addScore(50, br.x + br.w / 2, br.y);
+      toast('❤️ ¡Vidas al máximo! +50 puntos', 1000);
+    }
   } else if (br.type === 'grow') {
     const cx = paddle.x + paddle.w / 2;
     paddle.w = PADDLE_BIG_W;

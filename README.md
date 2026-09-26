@@ -13,7 +13,7 @@ Arkanoid de la jungla en un solo `index.html` (HTML/CSS/JS, sin dependencias).
 ## Mecánicas
 - Combos: cada ladrillo roto sin tocar la mano sube el multiplicador (hasta x5).
 - Barra de furia: se llena rompiendo ladrillos y combos.
-- Power-ups: 🍌 mango gigante, ❤️ vida extra, 💪 mano gigante, 🐌 mango lento, 🍇 lluvia de mangos.
+- Power-ups: 🍌 mango gigante, ❤️ vida extra (máximo 10 vidas; a partir de ahí da puntos), 💪 mano gigante, 🐌 mango lento, 🍇 lluvia de mangos.
 
 ## 🏆 Ranking de mejores gorilas
 - Al terminar la partida (game over) el juego pide tu nombre y guarda la puntuación; se muestra el **top 10**. Tecla **R** o el botón 🏆 muestran el ranking en cualquier momento.
