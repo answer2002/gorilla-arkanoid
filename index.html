@@ -79,11 +79,95 @@
   }
   #msg small { display: block; font-size: 14px; margin-top: 8px; opacity: .85; }
   #help { font-size: 12px; opacity: .7; margin-top: 6px; text-align: center; padding: 0 10px; }
-  #mute {
-    position: absolute; right: 10px; top: 10px;
+  #mute, #rankBtn {
+    position: absolute; top: 10px;
     background: rgba(0,0,0,.35); border: 1px solid #5a3b1e; border-radius: 8px;
     color: #ffe08a; font-size: 18px; cursor: pointer; padding: 2px 6px;
   }
+  #mute { right: 10px; }
+  #rankBtn { right: 52px; }
+
+  /* ---------- Ranking de mejores gorilas ---------- */
+  #rank {
+    position: absolute; inset: 0;
+    display: none; align-items: center; justify-content: center;
+    background: rgba(5, 15, 6, 0.72);
+    border-radius: 12px;
+    cursor: default;
+    z-index: 5;
+  }
+  #rank.open { display: flex; }
+  #rankBox {
+    width: min(92%, 380px);
+    max-height: 96%;
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 14px 18px 16px;
+    background: linear-gradient(180deg, #2a4a1f 0%, #16301a 100%);
+    border: 5px solid #5a3b1e;
+    border-radius: 14px;
+    box-shadow: 0 0 30px rgba(255, 200, 80, 0.35), inset 0 0 25px rgba(0,0,0,.45);
+    text-align: center;
+    animation: rankIn .35s cubic-bezier(.2,1.4,.4,1);
+  }
+  @keyframes rankIn { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  #rankBox h2 {
+    margin: 0 0 8px;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: #ffd200;
+    text-shadow: 2px 2px 0 #3a2412, 0 0 12px rgba(255,210,0,.5);
+  }
+  #rankScore { font-size: 15px; margin-bottom: 8px; }
+  #rankScore b { color: #ffd200; font-size: 20px; }
+  #rankForm label { display: block; font-size: 13px; opacity: .85; margin-bottom: 4px; }
+  #rankName {
+    width: 100%; box-sizing: border-box;
+    padding: 8px 10px;
+    font: bold 18px 'Trebuchet MS', 'Segoe UI', sans-serif;
+    text-align: center;
+    color: #ffe08a;
+    background: #0a1a0c;
+    border: 2px solid #5a3b1e; border-radius: 8px;
+    outline: none;
+    user-select: text; -webkit-user-select: text;
+  }
+  #rankName:focus { border-color: #ffd200; box-shadow: 0 0 10px rgba(255,210,0,.5); }
+  .rankBtns { display: flex; gap: 8px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+  .rankBtns button {
+    font: bold 15px 'Trebuchet MS', 'Segoe UI', sans-serif;
+    padding: 8px 18px;
+    color: #2b1a0a;
+    background: linear-gradient(180deg, #ffd85e, #f2a71b);
+    border: 2px solid #5a3b1e; border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #3a2412;
+  }
+  .rankBtns button:hover { filter: brightness(1.1); }
+  .rankBtns button:active { transform: translateY(2px); box-shadow: 0 1px 0 #3a2412; }
+  .rankBtns button:disabled { opacity: .5; cursor: wait; transform: none; }
+  .rankBtns button.ghost { background: rgba(0,0,0,.3); color: #ffe08a; }
+  #rankStatus { font-size: 13px; min-height: 18px; margin: 8px 0 4px; color: #ffb347; }
+  #rankList {
+    list-style: none; margin: 4px 0 0; padding: 0;
+    text-align: left; font-size: 15px;
+  }
+  #rankList li {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 8px; margin: 2px 0;
+    border-radius: 7px;
+    background: rgba(0,0,0,.22);
+  }
+  #rankList li:nth-child(1) { background: rgba(255,210,0,.18); color: #ffd200; }
+  #rankList li:nth-child(2) { background: rgba(220,220,220,.14); }
+  #rankList li:nth-child(3) { background: rgba(205,127,50,.16); }
+  #rankList li.me { outline: 2px solid #ffd200; box-shadow: 0 0 10px rgba(255,210,0,.6); animation: pulse .6s infinite alternate; }
+  #rankList .pos { width: 28px; text-align: center; font-weight: bold; flex: none; }
+  #rankList .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: bold; }
+  #rankList .lvl { font-size: 11px; opacity: .7; flex: none; }
+  #rankList .pts { font-weight: bold; min-width: 52px; text-align: right; flex: none; }
+  #rankList li.empty { justify-content: center; opacity: .7; font-style: italic; }
+  #rankFoot { font-size: 11px; opacity: .65; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -99,8 +183,27 @@
     <canvas id="game" width="640" height="520"></canvas>
     <div id="msg"></div>
     <button id="mute" title="Sonido (M)">🔊</button>
+    <button id="rankBtn" title="Ranking (R)">🏆</button>
+    <div id="rank">
+      <div id="rankBox">
+        <h2>🏆 MEJORES GORILAS 🏆</h2>
+        <div id="rankForm">
+          <div id="rankScore"></div>
+          <label for="rankName">Tu nombre de gorila</label>
+          <input id="rankName" maxlength="12" placeholder="Gorila anónimo" autocomplete="off" spellcheck="false">
+          <div class="rankBtns">
+            <button id="rankSave">🍌 Guardar puntuación</button>
+            <button id="rankSkip" class="ghost">Saltar</button>
+          </div>
+        </div>
+        <div id="rankStatus"></div>
+        <ol id="rankList"></ol>
+        <div class="rankBtns" id="rankCloseRow"><button id="rankClose">Jugar de nuevo</button></div>
+        <div id="rankFoot"></div>
+      </div>
+    </div>
   </div>
-  <div id="help">Ratón / táctil / flechas: mover · Clic o ESPACIO: lanzar · Clic o F con la barra llena: ¡FURIA DEL GORILA! · P: pausa · M: sonido</div>
+  <div id="help">Ratón / táctil / flechas: mover · Clic o ESPACIO: lanzar · Clic o F con la barra llena: ¡FURIA DEL GORILA! · P: pausa · M: sonido · R: ranking</div>
 
 <script>
 'use strict';
@@ -449,6 +552,8 @@ function togglePause() {
 }
 
 document.addEventListener('keydown', e => {
+  if (rankingOpen) return;               // el ranking gestiona sus propias teclas
+  if (e.key === 'r' || e.key === 'R') { openRanking('view'); return; }
   if (e.key === 'ArrowLeft') { leftPressed = true; e.preventDefault(); }
   if (e.key === 'ArrowRight') { rightPressed = true; e.preventDefault(); }
   if (e.key === ' ') {
@@ -607,6 +712,9 @@ function loseLife() {
     running = false;
     if (document.exitPointerLock) document.exitPointerLock();
     showMsg('GAME OVER 🦍', 'Puntos: ' + score + ' — clic o ESPACIO para reiniciar');
+    // pequeña pausa para que se vea el flash/temblor antes de pedir el nombre
+    const finalScore = score, finalLevel = level;
+    setTimeout(() => { if (!running && !rankingOpen) openRanking('submit', finalScore, finalLevel); }, 900);
   } else {
     newServeBall();
     showMsg('¡Ay! Mango perdido 🥭', 'clic o ESPACIO para lanzar');
@@ -835,8 +943,215 @@ function draw() {
   drawOverlays();
 }
 
+// ---------- RANKING DE MEJORES GORILAS ----------
+// Ranking GLOBAL compartido entre jugadores. Backend: textdb.dev, un almacén JSON gratuito,
+// sin registro y sin servidor propio (HTTPS + CORS, ideal para GitHub Pages).
+// Siempre se guarda ademas una copia en localStorage (cache + respaldo sin conexion).
+// Para cambiar de backend (Firebase, Supabase, jsonbin...) basta con reescribir
+// rankingRemoteLoad() / rankingRemoteSave(): reciben y devuelven un array de entradas
+// { name, score, level, date }.
+const RANKING = {
+  url: 'https://textdb.dev/api/data/fcb68ee2-15a2-41d7-bf78-df39f2aadd38',
+  maxShown: 10,        // entradas que se muestran
+  maxStored: 25,       // entradas que se conservan en el backend
+  maxName: 12,
+  timeoutMs: 8000,
+  localKey: 'gorillaArkanoid.ranking',
+  nameKey: 'gorillaArkanoid.playerName'
+};
+const rankEl = $('rank'), rankForm = $('rankForm'), rankScoreEl = $('rankScore'), rankNameEl = $('rankName');
+const rankSaveBtn = $('rankSave'), rankSkipBtn = $('rankSkip'), rankCloseBtn = $('rankClose');
+const rankStatusEl = $('rankStatus'), rankListEl = $('rankList'), rankFootEl = $('rankFoot'), rankCloseRow = $('rankCloseRow');
+function showRankForm(show) { rankForm.style.display = show ? 'block' : 'none'; rankCloseRow.style.display = show ? 'none' : 'flex'; }
+let rankingOpen = false;
+let rankingSession = 0;   // para ignorar respuestas de red de una apertura anterior
+let rankingPending = { score: 0, level: 1 };   // puntuacion pendiente de guardar
+
+function cleanName(raw) {
+  const n = String(raw || '').replace(/[<>\u0000-\u001f]/g, '').replace(/\s+/g, ' ').trim().slice(0, RANKING.maxName);
+  return n || 'Gorila anónimo';
+}
+function normalizeEntries(list) {
+  if (!Array.isArray(list)) return [];
+  return list
+    .filter(e => e && typeof e.name === 'string' && Number.isFinite(Number(e.score)))
+    .map(e => ({
+      name: cleanName(e.name),
+      score: Math.max(0, Math.floor(Number(e.score))),
+      level: Math.max(1, Math.floor(Number(e.level) || 1)),
+      date: typeof e.date === 'string' ? e.date : ''
+    }))
+    .filter((e, i, arr) => arr.findIndex(o => o.name === e.name && o.score === e.score && o.date === e.date) === i)
+    .sort((a, b) => b.score - a.score || (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+    .slice(0, RANKING.maxStored);
+}
+function storageGet(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
+function storageSet(key, val) { try { localStorage.setItem(key, val); } catch (e) { /* modo privado, etc. */ } }
+function rankingLocalLoad() {
+  try { return normalizeEntries(JSON.parse(storageGet(RANKING.localKey) || '[]')); } catch (e) { return []; }
+}
+function rankingLocalSave(list) { storageSet(RANKING.localKey, JSON.stringify(list)); }
+
+function fetchTimeout(url, opts) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), RANKING.timeoutMs);
+  return fetch(url, Object.assign({ signal: ctrl.signal, cache: 'no-store' }, opts)).finally(() => clearTimeout(t));
+}
+async function rankingRemoteLoad() {
+  if (!RANKING.url) throw new Error('sin backend');
+  const r = await fetchTimeout(RANKING.url);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const txt = (await r.text()).trim();
+  if (!txt || txt === '""') return [];      // documento vacio / recien creado
+  let data = JSON.parse(txt);
+  if (typeof data === 'string') data = JSON.parse(data);   // por si el backend devuelve el JSON como cadena
+  return normalizeEntries(Array.isArray(data) ? data : (data && data.scores));
+}
+async function rankingRemoteSave(list) {
+  if (!RANKING.url) throw new Error('sin backend');
+  const r = await fetchTimeout(RANKING.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ v: 1, updated: new Date().toISOString(), scores: list })
+  });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+}
+// Devuelve { list, global } — si el backend falla, cae al ranking local
+async function rankingLoad() {
+  try {
+    const list = await rankingRemoteLoad();
+    rankingLocalSave(normalizeEntries(list.concat(rankingLocalLoad())).slice(0, RANKING.maxStored));
+    return { list, global: true };
+  } catch (e) {
+    return { list: rankingLocalLoad(), global: false };
+  }
+}
+async function rankingSubmit(entry) {
+  const local = normalizeEntries(rankingLocalLoad().concat([entry]));
+  rankingLocalSave(local);
+  try {
+    // releer justo antes de escribir para no pisar puntuaciones de otro jugador
+    const remote = await rankingRemoteLoad();
+    const merged = normalizeEntries(remote.concat([entry]));
+    await rankingRemoteSave(merged);
+    rankingLocalSave(normalizeEntries(merged.concat(local)));
+    return { list: merged, global: true };
+  } catch (e) {
+    return { list: local, global: false };
+  }
+}
+const MEDALS = ['🥇', '🥈', '🥉'];
+function renderRanking(list, me) {
+  rankListEl.textContent = '';
+  const shown = list.slice(0, RANKING.maxShown);
+  if (!shown.length) {
+    const li = document.createElement('li');
+    li.className = 'empty';
+    li.textContent = 'Todavía no hay puntuaciones… ¡sé el primer gorila!';
+    rankListEl.appendChild(li);
+    return -1;
+  }
+  let myPos = -1;
+  shown.forEach((e, i) => {
+    const li = document.createElement('li');
+    const isMe = me && myPos < 0 && e.name === me.name && e.score === me.score && e.date === me.date;
+    if (isMe) { li.className = 'me'; myPos = i; }
+    const pos = document.createElement('span'); pos.className = 'pos'; pos.textContent = MEDALS[i] || (i + 1) + '.';
+    const name = document.createElement('span'); name.className = 'name'; name.textContent = e.name;
+    const lvl = document.createElement('span'); lvl.className = 'lvl'; lvl.textContent = 'Nv ' + e.level;
+    const pts = document.createElement('span'); pts.className = 'pts'; pts.textContent = e.score;
+    li.append(pos, name, lvl, pts);
+    rankListEl.appendChild(li);
+  });
+  return myPos;
+}
+function setRankFoot(global) {
+  rankFootEl.textContent = global
+    ? '🌍 Ranking global compartido · Top ' + RANKING.maxShown
+    : '📴 Sin conexión con el ranking global: mostrando el ranking de este navegador';
+}
+// mode: 'submit' (fin de partida, pide nombre) | 'view' (solo consultar)
+async function openRanking(mode, finalScore, finalLevel) {
+  if (rankingOpen) return;
+  rankingOpen = true;
+  const session = ++rankingSession;
+  if (document.exitPointerLock) document.exitPointerLock();
+  if (mode === 'view' && running && !paused && !ballStuck) togglePause();
+  const askName = mode === 'submit' && finalScore > 0;
+  rankingPending = { score: finalScore || 0, level: finalLevel || 1 };
+  showRankForm(askName);
+  rankScoreEl.innerHTML = '';
+  if (askName) {
+    rankScoreEl.append('Has hecho ');
+    const b = document.createElement('b'); b.textContent = finalScore;
+    rankScoreEl.append(b, ' puntos (nivel ' + finalLevel + ')');
+    rankNameEl.value = storageGet(RANKING.nameKey) || '';
+    rankSaveBtn.disabled = false; rankSkipBtn.disabled = false;
+  }
+  rankStatusEl.textContent = mode === 'submit' && finalScore <= 0 ? '¡Ni un ladrillo! Inténtalo otra vez 🍌' : '';
+  rankCloseBtn.textContent = running ? 'Cerrar' : 'Jugar de nuevo';
+  rankFootEl.textContent = 'Cargando ranking…';
+  renderRanking(rankingLocalLoad(), null);
+  rankEl.classList.add('open');
+  if (askName) setTimeout(() => rankNameEl.focus(), 50);
+
+  const res = await rankingLoad();
+  if (session !== rankingSession) return;
+  if (!askName || res.global) renderRanking(res.list, null);
+  setRankFoot(res.global);
+}
+function closeRanking() {
+  if (!rankingOpen) return;
+  rankingOpen = false;
+  rankingSession++;
+  rankEl.classList.remove('open');
+  rankNameEl.blur();
+}
+async function saveRankingEntry() {
+  if (rankSaveBtn.disabled) return;
+  const name = cleanName(rankNameEl.value);
+  storageSet(RANKING.nameKey, name);
+  const entry = { name, score: rankingPending.score, level: rankingPending.level, date: new Date().toISOString() };
+  const session = rankingSession;
+  rankSaveBtn.disabled = true; rankSkipBtn.disabled = true;
+  rankStatusEl.textContent = 'Guardando…';
+  const res = await rankingSubmit(entry);
+  if (session !== rankingSession) return;
+  showRankForm(false);
+  const pos = renderRanking(res.list, entry);
+  setRankFoot(res.global);
+  if (pos === 0) { rankStatusEl.textContent = '👑 ¡' + name + ', eres el REY DE LA JUNGLA!'; sfx.level(); }
+  else if (pos > 0) { rankStatusEl.textContent = '🎉 ¡' + name + ', estás en el puesto ' + (pos + 1) + '!'; sfx.power(); }
+  else rankStatusEl.textContent = 'Guardado, pero no has entrado en el top ' + RANKING.maxShown + '. ¡A por más mangos!';
+  if (!res.global) rankStatusEl.textContent += ' (solo en este navegador)';
+}
+function skipRankingEntry() {
+  showRankForm(false);
+  rankStatusEl.textContent = 'Puntuación no guardada';
+  const session = rankingSession;
+  rankingLoad().then(res => { if (session === rankingSession) { renderRanking(res.list, null); setRankFoot(res.global); } });
+}
+function rankingCloseAction() {
+  const wasRunning = running;
+  closeRanking();
+  if (!wasRunning) restart();
+}
+rankSaveBtn.addEventListener('click', () => { ensureAudio(); saveRankingEntry(); });
+rankSkipBtn.addEventListener('click', skipRankingEntry);
+rankCloseBtn.addEventListener('click', () => { ensureAudio(); rankingCloseAction(); });
+$('rankBtn').addEventListener('click', e => { e.stopPropagation(); if (rankingOpen) rankingCloseAction(); else openRanking('view'); });
+rankEl.addEventListener('keydown', e => {
+  e.stopPropagation();
+  const formVisible = rankForm.style.display !== 'none';
+  if (e.key === 'Enter') { e.preventDefault(); if (formVisible) saveRankingEntry(); else rankingCloseAction(); }
+  else if (e.key === 'Escape') { e.preventDefault(); if (formVisible) skipRankingEntry(); else rankingCloseAction(); }
+});
+rankEl.addEventListener('mousedown', e => e.stopPropagation());
+rankEl.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+
 // ---------- Arranque / reinicio ----------
 function restart() {
+  closeRanking();
   lives = 3; score = 0; level = 1;
   livesEl.textContent = lives; scoreEl.textContent = score; levelEl.textContent = level;
   baseSpeed = 4.2;
